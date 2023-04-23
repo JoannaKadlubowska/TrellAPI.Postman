@@ -1,0 +1,1241 @@
+{
+	"info": {
+		"_postman_id": "2939cb53-efc1-4149-af7f-319441adc935",
+		"name": "API_Trello",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "18691733"
+	},
+	"item": [
+		{
+			"name": "Utworzenie tablicy",
+			"item": [
+				{
+					"name": "Utworzenie tablicy",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let boardName = pm.variables.replaceIn(\"First board \" + _.random(1,30))\r",
+									"\r",
+									"pm.collectionVariables.set(\"boardName\", boardName);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const respBody = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Should verify response status\", () =>{\r",
+									"pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify response name\", () =>{\r",
+									"    const responseName = pm.variables.get(\"boardName\");\r",
+									"    pm.expect(respBody.name).to.eql(responseName)\r",
+									"})\r",
+									"\r",
+									"pm.collectionVariables.set(\"boardId\", respBody.id);\r",
+									"pm.collectionVariables.set(\"boardName\", respBody.name)\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}boards/?name={{boardName}}&token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}boards"
+							],
+							"path": [
+								""
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "{{boardName}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Dodanie członka do tablicy",
+			"item": [
+				{
+					"name": "Pobranie informacji o tablicach",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const respBody = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Should verify response status\", () =>{\r",
+									"    pm.response.to.have.status(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify response name\", () =>{    \r",
+									"    const boardName = pm.collectionVariables.get(\"boardName\")\r",
+									"    pm.expect(respBody.name).to.eql(boardName)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify response permission level\", () =>{\r",
+									"    pm.expect(respBody.prefs.permissionLevel).to.eql(\"private\")\r",
+									"})\r",
+									"\r",
+									"// pm.test(\"should verify contain pink label\", () =>{\r",
+									"//     pm.expect(respBody.labelNames.pink).to.eql(\"special\");\r",
+									"//           })"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}boards/{{boardId}}?token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}boards"
+							],
+							"path": [
+								"{{boardId}}"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Zaproszenie przez maila",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const respBody = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Should verify response status\", () =>{\r",
+									"    pm.response.to.have.status(200)\r",
+									"})\r",
+									"\r",
+									"pm.collectionVariables.set(\"idNewMember\", respBody.members[0].id)\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n{\r\n    \"fullName\" : \"{{$randomFullName}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}boards/{{boardId}}/members?email={{$randomEmail}}&token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}boards"
+							],
+							"path": [
+								"{{boardId}}",
+								"members"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "{{$randomEmail}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Dodanie nowego członka",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}boards/{{boardId}}/members/{{idNewMember}}?type=normal&token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}boards"
+							],
+							"path": [
+								"{{boardId}}",
+								"members",
+								"{{idNewMember}}"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "normal"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Pobranie informacji o członkach tablicy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const respBody = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Should verify response status\", () =>{\r",
+									"    pm.response.to.have.status(200)\r",
+									"})\r",
+									"pm.collectionVariables.set(\"idNewMember\", respBody[1].id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}boards/{{boardId}}/members?token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}boards"
+							],
+							"path": [
+								"{{boardId}}",
+								"members"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Dodanie listy do tablicy",
+			"item": [
+				{
+					"name": "pobranie inf o listach tablicy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const respBody = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Should verify response status\", () =>{\r",
+									"    pm.response.to.have.status(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify name second list\", () =>{\r",
+									"    pm.expect(respBody[1].name).to.eql(\"W trakcie\")\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify idBoard in every list\", () =>{\r",
+									"        respBody.forEach(item=>{\r",
+									"        pm.expect(item.closed).to.eql(false);\r",
+									"      })\r",
+									"})\r",
+									"\r",
+									"\r",
+									"     pm.variables.set(\"firstListId\", respBody[0].id)\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}boards/{{boardId}}/lists?token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}boards"
+							],
+							"path": [
+								"{{boardId}}",
+								"lists"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "dodanie nowej listy",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let newListName = pm.variables.replaceIn(\"New list \" + _.random(1,30))\r",
+									"\r",
+									"pm.variables.set(\"newListName\", newListName);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const respBody = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Should verify response status\", () =>{\r",
+									"   pm.expect(pm.response.code).to.eql(200)\r",
+									"})\r",
+									"pm.test(\"Should verify list name \", () =>{\r",
+									"    const nameList = pm.variables.get(\"newListName\")\r",
+									"    pm.expect(respBody.name).to.eql(nameList)\r",
+									"})\r",
+									"pm.test(\"Set id list to variables \", () =>{\r",
+									"    pm.collectionVariables.set(\"newListId\", respBody.id)\r",
+									"})\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{newListName}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}boards/{{boardId}}/lists?token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}boards"
+							],
+							"path": [
+								"{{boardId}}",
+								"lists"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "pobranie inf po zmianie",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}boards/{{boardId}}/lists?token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}boards"
+							],
+							"path": [
+								"{{boardId}}",
+								"lists"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Dodanie karty do listy",
+			"item": [
+				{
+					"name": "inf o listach na tablicy",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}boards/{{boardId}}/lists?token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}boards"
+							],
+							"path": [
+								"{{boardId}}",
+								"lists"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "inf o kartach na danej tablicy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const respBody = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Should verify response status\", () =>{\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify idList of card in a list\", () =>{\r",
+									"    const idList = pm.variables.get(\"firstListId\")\r",
+									"    respBody.map(item =>{\r",
+									"    pm.expect(item.idList).to.contain(idList)\r",
+									"    })   \r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify card closed is false\", () =>{\r",
+									"    respBody.forEach(item =>{\r",
+									"    pm.expect(item.closed).to.eql(false)\r",
+									"    })\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}lists/{{newListId}}/cards?token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}lists"
+							],
+							"path": [
+								"{{newListId}}",
+								"cards"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "dodanie karty",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const respBody = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Should verify response status\", () =>{\r",
+									"    pm.response.to.have.status(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Create variable -> second card id\", () =>{\r",
+									"    pm.collectionVariables.set(\"secoundCardId\", respBody.id )\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"second card\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}cards?idList={{newListId}}&token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}cards"
+							],
+							"query": [
+								{
+									"key": "idList",
+									"value": "{{newListId}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "inf o listach po zmianie",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}lists/{{newListId}}/cards?token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}lists"
+							],
+							"path": [
+								"{{newListId}}",
+								"cards"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Aktualizacja karty",
+			"item": [
+				{
+					"name": "inf o kartach listy",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "akcje dla danej karty",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "dodanie członka dla danej karty",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "kopia karty ?",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "komentarz/checklista",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "inf o karcie po zmianie",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "przeniesienie pomiędzy listami",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Aktualizacja listy",
+			"item": [
+				{
+					"name": "kopia listy",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "pola listy",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "filtrowanie list",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "inf po zmianach",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Aktualizacja tablicy",
+			"item": [
+				{
+					"name": "Pobranie informacji o tablicach Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const respBody = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Should verify response status\", () =>{\r",
+									"    pm.response.to.have.status(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify response name\", () =>{    \r",
+									"    const boardName = pm.collectionVariables.get(\"boardName\")\r",
+									"    pm.expect(respBody.name).to.eql(boardName)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify response permission level\", () =>{\r",
+									"    pm.expect(respBody.prefs.permissionLevel).to.eql(\"private\")\r",
+									"})\r",
+									"\r",
+									"// pm.test(\"should verify contain pink label\", () =>{\r",
+									"//     pm.expect(respBody.labelNames.pink).to.eql(\"special\");\r",
+									"//           })"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}boards/{{boardId}}?token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}boards"
+							],
+							"path": [
+								"{{boardId}}"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "usunięcie członka",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}boards/{{boardId}}/members/{{idNewMember}}?token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}boards"
+							],
+							"path": [
+								"{{boardId}}",
+								"members",
+								"{{idNewMember}}"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "nazwa tablicy",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let newBoardName = pm.variables.replaceIn(\"Name \" + _.random(1,30))\r",
+									"\r",
+									"pm.variables.set(\"newBoardName\", newBoardName);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const respBody = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Should verify response status\", () =>{\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify response name\", () =>{\r",
+									"    const newBoardName = pm.variables.get(\"newBoardName\")\r",
+									"    pm.expect(respBody.name).to.eql(newBoardName)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{newBoardName}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}boards/{{boardId}}?key={{key}}&token={{token}}",
+							"host": [
+								"{{baseURL}}boards"
+							],
+							"path": [
+								"{{boardId}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "akcje tablicy",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}boards/{{boardId}}/actions?token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}boards"
+							],
+							"path": [
+								"{{boardId}}",
+								"actions"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "tło tablicy",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"prefs/backgroundImage\" : \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}boards/{{boardId}}?token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}boards"
+							],
+							"path": [
+								"{{boardId}}"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Usunięcie karty z listy",
+			"item": [
+				{
+					"name": "inf o kartach na danej tablicy",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}lists/{{newListId}}/cards?token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}lists"
+							],
+							"path": [
+								"{{newListId}}",
+								"cards"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "usunięcie wszystkich kart z listy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const respBody = pm.response.json();\r",
+									"\r",
+									"pm.test( \"Should verify response status\", () =>{\r",
+									"    pm.response.to.have.status(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify response body\", () =>{\r",
+									"    pm.expect(respBody).to.be.eql({})\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}lists/{{newListId}}/archiveAllCards?token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}lists"
+							],
+							"path": [
+								"{{newListId}}",
+								"archiveAllCards"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Usunięcie listy",
+			"item": [
+				{
+					"name": "inf o listach na tablicy",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}boards/{{boardId}}/lists?token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}boards"
+							],
+							"path": [
+								"{{boardId}}",
+								"lists"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "archiwizacja danej listy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const respBody = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Should verify response status\", () =>{\r",
+									"    pm.response.to.have.status(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify response closed is true\", ()=>{\r",
+									"    pm.expect(respBody.closed).to.eql(true)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"closed\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/lists/{{newListId}}?token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"lists",
+								"{{newListId}}"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Usunięcie tablicy",
+			"item": [
+				{
+					"name": "akcje tablicy",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}boards/{{boardId}}/actions?token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}boards"
+							],
+							"path": [
+								"{{boardId}}",
+								"actions"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "usunięcie danej tablicy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const respBody = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Should verify response status\", () =>{\r",
+									"    pm.response.to.have.status(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify response value\", () =>{\r",
+									"    pm.expect(respBody._value).to.eql(null)\r",
+									"})\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}boards/{{boardId}}?token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}boards"
+							],
+							"path": [
+								"{{boardId}}"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "boardName",
+			"value": ""
+		},
+		{
+			"key": "boardId",
+			"value": ""
+		},
+		{
+			"key": "newListId",
+			"value": ""
+		},
+		{
+			"key": "idNewMember",
+			"value": ""
+		},
+		{
+			"key": "secoundCardId",
+			"value": ""
+		}
+	]
+}
