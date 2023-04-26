@@ -10,7 +10,7 @@
 			"name": "Utworzenie tablicy",
 			"item": [
 				{
-					"name": "Utworzenie tablicy",
+					"name": "Create a Board",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -81,7 +81,7 @@
 			"name": "Dodanie członka do tablicy",
 			"item": [
 				{
-					"name": "Pobranie informacji o tablicach",
+					"name": "Get a Board",
 					"event": [
 						{
 							"listen": "test",
@@ -101,10 +101,7 @@
 									"pm.test(\"Should verify response permission level\", () =>{\r",
 									"    pm.expect(respBody.prefs.permissionLevel).to.eql(\"private\")\r",
 									"})\r",
-									"\r",
-									"// pm.test(\"should verify contain pink label\", () =>{\r",
-									"//     pm.expect(respBody.labelNames.pink).to.eql(\"special\");\r",
-									"//           })"
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -136,7 +133,7 @@
 					"response": []
 				},
 				{
-					"name": "Zaproszenie przez maila",
+					"name": "Invite Member to Board via email",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -157,7 +154,12 @@
 									"    pm.response.to.have.status(200)\r",
 									"})\r",
 									"\r",
-									"pm.collectionVariables.set(\"idNewMember\", respBody.members[0].id)\r",
+									"pm.collectionVariables.set(\"idNewMember\", respBody.members[1].id)\r",
+									"\r",
+									"pm.test(\"Should verify member type\", () =>{\r",
+									"    pm.expect(respBody.members[1].memberType).to.eql(\"ghost\")\r",
+									"})\r",
+									"\r",
 									""
 								],
 								"type": "text/javascript"
@@ -204,7 +206,7 @@
 					"response": []
 				},
 				{
-					"name": "Dodanie nowego członka",
+					"name": "Add a Member to a Board",
 					"request": {
 						"method": "PUT",
 						"header": [],
@@ -237,7 +239,7 @@
 					"response": []
 				},
 				{
-					"name": "Pobranie informacji o członkach tablicy",
+					"name": "Get the Members of a Board",
 					"event": [
 						{
 							"listen": "test",
@@ -299,7 +301,7 @@
 									"})\r",
 									"\r",
 									"pm.test(\"Should verify name second list\", () =>{\r",
-									"    pm.expect(respBody[1].name).to.eql(\"W trakcie\")\r",
+									"    pm.expect(respBody[1].name).to.eql(\"Do zrobienia\")\r",
 									"})\r",
 									"\r",
 									"pm.test(\"Should verify idBoard in every list\", () =>{\r",
@@ -689,27 +691,83 @@
 				{
 					"name": "dodanie członka dla danej karty",
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": ""
+							"raw": "{{baseURL}}cards/{{CardId}}/idMembers?token={{token}}&key={{key}}&value={{idNewMember}}",
+							"host": [
+								"{{baseURL}}cards"
+							],
+							"path": [
+								"{{CardId}}",
+								"idMembers"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "value",
+									"value": "{{idNewMember}}"
+								}
+							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "kopia karty ?",
+					"name": "Remove a Member from a Card",
 					"request": {
-						"method": "GET",
+						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": ""
+							"raw": "{{baseURL}}cards/{{CardId}}/idMembers/{{idNewMember}}?token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}cards"
+							],
+							"path": [
+								"{{CardId}}",
+								"idMembers",
+								"{{idNewMember}}"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "komentarz/checklista",
+					"name": "dodanie checklisty",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const respBody = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Should verify response status\", () =>{\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"pm.collectionVariables.set(\"checklistId\", respBody.id)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -737,12 +795,83 @@
 					"response": []
 				},
 				{
-					"name": "inf o karcie po zmianie",
+					"name": "Delete a Checklist on a Card",
 					"request": {
-						"method": "GET",
+						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": ""
+							"raw": "{{baseURL}}cards/{{CardId}}/checklists/{{checklistId}}?token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}cards"
+							],
+							"path": [
+								"{{CardId}}",
+								"checklists",
+								"{{checklistId}}"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "dodanie komentarza",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}cards/{{CardId}}/actions/comments?token={{token}}&key={{key}}&text={{$randomCatchPhrase}}",
+							"host": [
+								"{{baseURL}}cards"
+							],
+							"path": [
+								"{{CardId}}",
+								"actions",
+								"comments"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "text",
+									"value": "{{$randomCatchPhrase}}"
+								}
+							]
 						}
 					},
 					"response": []
@@ -750,10 +879,149 @@
 				{
 					"name": "przeniesienie pomiędzy listami",
 					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}lists/{{newListId}}/moveAllCards?token={{token}}&key={{key}}&idList=6446100ce3f5b4dff464106c&idBoard={{boardId}}",
+							"host": [
+								"{{baseURL}}lists"
+							],
+							"path": [
+								"{{newListId}}",
+								"moveAllCards"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "idList",
+									"value": "6446100ce3f5b4dff464106c"
+								},
+								{
+									"key": "idBoard",
+									"value": "{{boardId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a Card",
+					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": ""
+							"raw": "{{baseURL}}cards/{{CardId}}?token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}cards"
+							],
+							"path": [
+								"{{CardId}}"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create a new Label on a Card",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const respBody = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Should verify response status\", () =>{\r",
+									"    pm.response.to.have.status(200)\r",
+									"})\r",
+									"\r",
+									"pm.collectionVariables.set(\"labelId\", respBody.id)\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}cards/{{CardId}}/labels?key={{key}}&token={{token}}&color=purple",
+							"host": [
+								"{{baseURL}}cards"
+							],
+							"path": [
+								"{{CardId}}",
+								"labels"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "color",
+									"value": "purple"
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add a Label to a Card",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}cards/{{CardId}}/idLabels?token={{token}}&key={{key}}&value={{labelId}}",
+							"host": [
+								"{{baseURL}}cards"
+							],
+							"path": [
+								"{{CardId}}",
+								"idLabels"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								},
+								{
+									"key": "value",
+									"value": "{{labelId}}"
+								}
+							]
 						}
 					},
 					"response": []
@@ -1278,6 +1546,135 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "inf o karcie po zmianie",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}cards/{{CardId}}?token={{token}}&key={{key}}",
+					"host": [
+						"{{baseURL}}cards"
+					],
+					"path": [
+						"{{CardId}}"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "{{token}}"
+						},
+						{
+							"key": "key",
+							"value": "{{key}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Lista Emoji",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/emoji?token={{token}}&key={{key}}",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"emoji"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "{{token}}"
+						},
+						{
+							"key": "key",
+							"value": "{{key}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Search",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"query\" : \"{{$randomLoremSentence}}\",\r\n    \"boards\" : \"{{$randomAlphaNumeric}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}search?token={{token}}&key={{key}}",
+					"host": [
+						"{{baseURL}}search"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "{{token}}"
+						},
+						{
+							"key": "key",
+							"value": "{{key}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Search members",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"query\" : \"{{$randomLoremSentence}}\"\r\n   \r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}search/members?token={{token}}&key={{key}}",
+					"host": [
+						"{{baseURL}}search"
+					],
+					"path": [
+						"members"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "{{token}}"
+						},
+						{
+							"key": "key",
+							"value": "{{key}}"
+						}
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
@@ -1323,6 +1720,18 @@
 		},
 		{
 			"key": "CardId",
+			"value": ""
+		},
+		{
+			"key": "checklistId",
+			"value": ""
+		},
+		{
+			"key": "idMembers",
+			"value": ""
+		},
+		{
+			"key": "labelId",
 			"value": ""
 		}
 	]
