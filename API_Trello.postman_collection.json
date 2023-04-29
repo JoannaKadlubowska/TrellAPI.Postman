@@ -7,7 +7,7 @@
 	},
 	"item": [
 		{
-			"name": "Utworzenie tablicy",
+			"name": "Create a Board",
 			"item": [
 				{
 					"name": "Create a Board",
@@ -78,7 +78,7 @@
 			]
 		},
 		{
-			"name": "Dodanie członka do tablicy",
+			"name": "Add a Member to a Board",
 			"item": [
 				{
 					"name": "Get a Board",
@@ -160,6 +160,8 @@
 									"    pm.expect(respBody.members[1].memberType).to.eql(\"ghost\")\r",
 									"})\r",
 									"\r",
+									"pm.collectionVariables.set(\"memberName\", respBody.members[1].fullName)\r",
+									"\r",
 									""
 								],
 								"type": "text/javascript"
@@ -207,6 +209,38 @@
 				},
 				{
 					"name": "Add a Member to a Board",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const respBody = pm.response.json();\r",
+									"const idMember = pm.collectionVariables.get(\"idNewMember\")\r",
+									"\r",
+									"pm.test(\"Should verify response status\", () =>{\r",
+									"    pm.response.to.have.status(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify id member\", () =>{\r",
+									"        pm.expect(respBody.members[1].id).to.eql(idMember)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify id member in memberships\", () =>{\r",
+									"    pm.expect(respBody.memberships[1].idMember).to.eql(idMember)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify memberType new member\", () =>{\r",
+									"    pm.expect(respBody.memberships[1].memberType).to.eql(\"normal\")\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify member deactivated status\", () =>{\r",
+									"    pm.expect(respBody.memberships[1].deactivated).to.eql(false)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "PUT",
 						"header": [],
@@ -246,11 +280,21 @@
 							"script": {
 								"exec": [
 									"const respBody = pm.response.json();\r",
+									"const idMember = pm.collectionVariables.get(\"idNewMember\");\r",
+									"const memberFullName = pm.collectionVariables.get(\"memberName\");\r",
 									"\r",
 									"pm.test(\"Should verify response status\", () =>{\r",
 									"    pm.response.to.have.status(200)\r",
 									"})\r",
-									"pm.collectionVariables.set(\"idNewMember\", respBody[1].id);"
+									"\r",
+									"pm.test(\"Should verify id new member\", () =>{\r",
+									"    pm.expect(respBody[1].id).to.eql(idMember)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify name new member\", () =>{\r",
+									"    pm.expect(respBody[1].fullName).to.eql(memberFullName)\r",
+									"})\r",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -285,10 +329,10 @@
 			]
 		},
 		{
-			"name": "Dodanie listy do tablicy",
+			"name": "Create a new List",
 			"item": [
 				{
-					"name": "pobranie inf o listach tablicy",
+					"name": "Get a List info",
 					"event": [
 						{
 							"listen": "test",
@@ -300,18 +344,14 @@
 									"    pm.response.to.have.status(200)\r",
 									"})\r",
 									"\r",
-									"pm.test(\"Should verify name second list\", () =>{\r",
-									"    pm.expect(respBody[1].name).to.eql(\"Do zrobienia\")\r",
-									"})\r",
-									"\r",
 									"pm.test(\"Should verify idBoard in every list\", () =>{\r",
 									"        respBody.forEach(item=>{\r",
 									"        pm.expect(item.closed).to.eql(false);\r",
 									"      })\r",
 									"})\r",
 									"\r",
+									"    pm.variables.set(\"firstListId\", respBody[0].id);\r",
 									"\r",
-									"     pm.variables.set(\"firstListId\", respBody[0].id)\r",
 									""
 								],
 								"type": "text/javascript"
@@ -345,7 +385,7 @@
 					"response": []
 				},
 				{
-					"name": "dodanie nowej listy",
+					"name": "Create a new List",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -363,17 +403,18 @@
 							"script": {
 								"exec": [
 									"const respBody = pm.response.json();\r",
+									"const nameList = pm.variables.get(\"newListName\");\r",
 									"\r",
 									"pm.test(\"Should verify response status\", () =>{\r",
 									"   pm.expect(pm.response.code).to.eql(200)\r",
 									"})\r",
 									"pm.test(\"Should verify list name \", () =>{\r",
-									"    const nameList = pm.variables.get(\"newListName\")\r",
-									"    pm.expect(respBody.name).to.eql(nameList)\r",
+									"        pm.expect(respBody.name).to.eql(nameList)\r",
 									"})\r",
-									"pm.test(\"Set id list to variables \", () =>{\r",
-									"    pm.collectionVariables.set(\"newListId\", respBody.id)\r",
-									"})\r",
+									"\r",
+									"pm.collectionVariables.set(\"newListId\", respBody.id)\r",
+									"pm.collectionVariables.set(\"newListName\", respBody.name)\r",
+									"\r",
 									"\r",
 									""
 								],
@@ -417,7 +458,32 @@
 					"response": []
 				},
 				{
-					"name": "pobranie inf po zmianie",
+					"name": "Get a List info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const respBody = pm.response.json();\r",
+									"const nameList = pm.collectionVariables.get(\"newListName\");\r",
+									"\r",
+									"\r",
+									"\r",
+									"\r",
+									"pm.test(\"Should verify name new list\", () =>{\r",
+									"    pm.expect(respBody[0].name).to.eql(nameList)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify status for all list\", () =>{\r",
+									" respBody.forEach(item=>{\r",
+									"        pm.expect(item.status).to.eql(null);\r",
+									"      })\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -447,10 +513,10 @@
 			]
 		},
 		{
-			"name": "Dodanie karty do listy",
+			"name": "Create a new Card",
 			"item": [
 				{
-					"name": "inf o listach na tablicy",
+					"name": "Get a List info",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -478,7 +544,7 @@
 					"response": []
 				},
 				{
-					"name": "inf o kartach na danej tablicy",
+					"name": "Get a Card info",
 					"event": [
 						{
 							"listen": "test",
@@ -535,7 +601,7 @@
 					"response": []
 				},
 				{
-					"name": "dodanie karty",
+					"name": "Create a new Card",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -600,7 +666,7 @@
 					"response": []
 				},
 				{
-					"name": "inf o listach po zmianie",
+					"name": "Get a List info",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -630,10 +696,10 @@
 			]
 		},
 		{
-			"name": "Aktualizacja karty",
+			"name": "Update a Card",
 			"item": [
 				{
-					"name": "inf o kartach listy",
+					"name": "Get a List info",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -661,7 +727,7 @@
 					"response": []
 				},
 				{
-					"name": "akcje dla danej karty",
+					"name": "Get Actions on a Card",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -689,7 +755,7 @@
 					"response": []
 				},
 				{
-					"name": "dodanie członka dla danej karty",
+					"name": "Add a Member to a Card",
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -750,7 +816,7 @@
 					"response": []
 				},
 				{
-					"name": "dodanie checklisty",
+					"name": "Create Checklist on a Card",
 					"event": [
 						{
 							"listen": "test",
@@ -824,7 +890,7 @@
 					"response": []
 				},
 				{
-					"name": "dodanie komentarza",
+					"name": "Add a new comment to a Card",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -1029,7 +1095,7 @@
 			]
 		},
 		{
-			"name": "Aktualizacja listy",
+			"name": "Update a List",
 			"item": [
 				{
 					"name": "kopia listy",
@@ -1078,10 +1144,10 @@
 			]
 		},
 		{
-			"name": "Aktualizacja tablicy",
+			"name": "Update a Board",
 			"item": [
 				{
-					"name": "Pobranie informacji o tablicach Copy",
+					"name": "Get a Board",
 					"event": [
 						{
 							"listen": "test",
@@ -1136,7 +1202,7 @@
 					"response": []
 				},
 				{
-					"name": "usunięcie członka",
+					"name": "Remove Member from Board",
 					"request": {
 						"method": "DELETE",
 						"header": [],
@@ -1165,7 +1231,7 @@
 					"response": []
 				},
 				{
-					"name": "nazwa tablicy",
+					"name": "Update a Board Name",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -1232,7 +1298,7 @@
 					"response": []
 				},
 				{
-					"name": "akcje tablicy",
+					"name": "Get Actions of a Board",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -1298,10 +1364,10 @@
 			]
 		},
 		{
-			"name": "Usunięcie karty z listy",
+			"name": "Archive  Cards in List",
 			"item": [
 				{
-					"name": "inf o kartach na danej tablicy",
+					"name": "Get a Card info",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -1329,7 +1395,7 @@
 					"response": []
 				},
 				{
-					"name": "usunięcie wszystkich kart z listy",
+					"name": "Archive all Cards in List",
 					"event": [
 						{
 							"listen": "test",
@@ -1378,10 +1444,10 @@
 			]
 		},
 		{
-			"name": "Usunięcie listy",
+			"name": "Archive a List",
 			"item": [
 				{
-					"name": "inf o listach na tablicy",
+					"name": "Get a List info",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -1409,7 +1475,7 @@
 					"response": []
 				},
 				{
-					"name": "archiwizacja danej listy",
+					"name": "Archive  a list",
 					"event": [
 						{
 							"listen": "test",
@@ -1463,14 +1529,42 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get a List info Copy",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}boards/{{boardId}}/lists?token={{token}}&key={{key}}",
+							"host": [
+								"{{baseURL}}boards"
+							],
+							"path": [
+								"{{boardId}}",
+								"lists"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{token}}"
+								},
+								{
+									"key": "key",
+									"value": "{{key}}"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
 		{
-			"name": "Usunięcie tablicy",
+			"name": "Delete a Board",
 			"item": [
 				{
-					"name": "akcje tablicy",
+					"name": "Get Actions of a Board",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -1498,7 +1592,7 @@
 					"response": []
 				},
 				{
-					"name": "usunięcie danej tablicy",
+					"name": "Delete a Board",
 					"event": [
 						{
 							"listen": "test",
@@ -1575,7 +1669,7 @@
 			"response": []
 		},
 		{
-			"name": "Lista Emoji",
+			"name": "List of Emoji",
 			"request": {
 				"method": "GET",
 				"header": [],
@@ -1732,6 +1826,14 @@
 		},
 		{
 			"key": "labelId",
+			"value": ""
+		},
+		{
+			"key": "memberName",
+			"value": ""
+		},
+		{
+			"key": "newListName",
 			"value": ""
 		}
 	]
