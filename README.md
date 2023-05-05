@@ -1,5 +1,5 @@
-# Trello API testing with Postman
-This project was created as a practise realised during COLT project organised by Cherry-IT (conducted by Anna Czyrko: linkedin.com/in/ania-czyrko-05933aa1). 
+## Trello API testing with Postman
+This project was created as a practise realised during project COLT 1/2023 organised by Cherry-IT (conducted by Anna Czyrko: [linkedin.com/in/ania-czyrko-05933aa1](https://www.linkedin.com/in/ania-czyrko-05933aa1/)). 
 
 Technology stacks: Postman
 
@@ -19,9 +19,9 @@ The system properties have been defined in collection and environment variables 
 - "token" defines the server token (or user token) provided by Trello
 
 
-# Setup
-Clone the repo ``https://github.com/JoannaKadlubowska/TrelloAPI_Postman``
-Install Postman ``https://www.postman.com/downloads/``
-Import collection file:  ``API_Trello.postman_collection.JSON``
-Import environment file: ``Trello_Api.postman_environment.JSON ``
-Click Run collection
+## Setup
+* Clone the repo ``https://github.com/JoannaKadlubowska/TrelloAPI_Postman``
+* Install Postman ``https://www.postman.com/downloads/``
+* Import collection file:  ``API_Trello.postman_collection.JSON``
+* Import environment file: ``Trello_Api.postman_environment.JSON ``
+* Click Run collection
