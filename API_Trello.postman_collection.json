@@ -29,11 +29,11 @@
 								"exec": [
 									"const respBody = pm.response.json();\r",
 									"\r",
-									"pm.test(\"Should verify response status\", () =>{\r",
+									"pm.test(\"Should verify response status is 200\", () =>{\r",
 									"pm.response.to.have.status(200);\r",
 									"})\r",
 									"\r",
-									"pm.test(\"Should verify response name\", () =>{\r",
+									"pm.test(\"Should verify response name is correct\", () =>{\r",
 									"    const responseName = pm.variables.get(\"boardName\");\r",
 									"    pm.expect(respBody.name).to.eql(responseName)\r",
 									"})\r",
@@ -83,19 +83,26 @@
 							"script": {
 								"exec": [
 									"const respBody = pm.response.json();\r",
+									"const boardName = pm.collectionVariables.get(\"boardName\")\r",
 									"\r",
-									"pm.test(\"Should verify response status\", () =>{\r",
+									"\r",
+									"pm.test(\"Should verify response status is 200\", () =>{\r",
 									"    pm.response.to.have.status(200)\r",
 									"})\r",
 									"\r",
-									"pm.test(\"Should verify response name\", () =>{    \r",
-									"    const boardName = pm.collectionVariables.get(\"boardName\")\r",
+									"pm.test(\"Should verify response name is correct\", () =>{    \r",
 									"    pm.expect(respBody.name).to.eql(boardName)\r",
 									"})\r",
 									"\r",
-									"pm.test(\"Should verify response permission level\", () =>{\r",
-									"    pm.expect(respBody.prefs.permissionLevel).to.eql(\"private\")\r",
+									"pm.test(\"Should verify response header is content-type\", () =>{\r",
+									"    pm.response.to.have.header(\"Content-Type\");\r",
 									"})\r",
+									"\r",
+									"pm.test(\"Should verify if header Content-Type contain application/json\", () =>{\r",
+									"    const contentType = pm.response.headers.get(\"Content-Type\");\r",
+									"    pm.expect(contentType).to.include(\"application/json\")\r",
+									"})\r",
+									"\r",
 									""
 								],
 								"type": "text/javascript"
@@ -130,10 +137,36 @@
 			]
 		},
 		{
-			"name": "Add a Member to a Board",
+			"name": "Add and Delete Member to a Board",
 			"item": [
 				{
 					"name": "Get Actions of a Board",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const respBody = pm.response.json();\r",
+									"const boardName = pm.collectionVariables.get(\"boardName\")\r",
+									"\r",
+									"pm.test(\"Should verify response status is 200\", () =>{\r",
+									"    pm.expect(pm.response.code).to.eql(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify board name is correct\", () =>{\r",
+									"    pm.expect(respBody[0].data.board.name).to.eql(boardName)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify member creator activity status isn't blocked\", () =>{\r",
+									"    pm.expect(respBody[0].memberCreator.activityBlocked).to.eql(false)\r",
+									"})\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -178,17 +211,17 @@
 								"exec": [
 									"const respBody = pm.response.json();\r",
 									"\r",
-									"pm.test(\"Should verify response status\", () =>{\r",
+									"pm.test(\"Should verify response status is 200\", () =>{\r",
 									"    pm.response.to.have.status(200)\r",
 									"})\r",
 									"\r",
-									"pm.collectionVariables.set(\"idNewMember\", respBody.members[1].id)\r",
-									"\r",
-									"pm.test(\"Should verify member type\", () =>{\r",
-									"    pm.expect(respBody.members[1].memberType).to.eql(\"ghost\")\r",
+									"pm.test(\"Should verify full name first member is not equal admin name\", () =>{\r",
+									"    pm.expect(respBody.members[0].fullName).to.not.includes(\"Joanna Kadłubowska\");\r",
+									"    pm.collectionVariables.set(\"idNewMember\", respBody.members[0].id);\r",
+									"    pm.collectionVariables.set(\"memberName\", respBody.members[0].fullName)\r",
 									"})\r",
 									"\r",
-									"pm.collectionVariables.set(\"memberName\", respBody.members[0].fullName)\r",
+									"\r",
 									"\r",
 									""
 								],
@@ -245,24 +278,24 @@
 									"const respBody = pm.response.json();\r",
 									"const idMember = pm.collectionVariables.get(\"idNewMember\")\r",
 									"\r",
-									"pm.test(\"Should verify response status\", () =>{\r",
+									"pm.test(\"Should verify response status is 200\", () =>{\r",
 									"    pm.response.to.have.status(200)\r",
 									"})\r",
 									"\r",
-									"pm.test(\"Should verify id member\", () =>{\r",
-									"        pm.expect(respBody.members[1].id).to.eql(idMember)\r",
+									"pm.test(\"Should verify id member is correct\", () =>{\r",
+									"        pm.expect(respBody.members[0].id).to.eql(idMember)\r",
 									"})\r",
 									"\r",
-									"pm.test(\"Should verify id member in memberships\", () =>{\r",
-									"    pm.expect(respBody.memberships[1].idMember).to.eql(idMember)\r",
+									"pm.test(\"Should verify id member in memberships is correct\", () =>{\r",
+									"    pm.expect(respBody.memberships[0].idMember).to.eql(idMember)\r",
 									"})\r",
 									"\r",
-									"pm.test(\"Should verify memberType new member\", () =>{\r",
-									"    pm.expect(respBody.memberships[1].memberType).to.eql(\"normal\")\r",
+									"pm.test(\"Should verify memberType new member is equal normal\", () =>{\r",
+									"    pm.expect(respBody.memberships[0].memberType).to.eql(\"normal\")\r",
 									"})\r",
 									"\r",
-									"pm.test(\"Should verify member deactivated status\", () =>{\r",
-									"    pm.expect(respBody.memberships[1].deactivated).to.eql(false)\r",
+									"pm.test(\"Should verify member deactivated status isn't deactivated\", () =>{\r",
+									"    pm.expect(respBody.memberships[0].deactivated).to.eql(false)\r",
 									"})"
 								],
 								"type": "text/javascript"
@@ -311,17 +344,23 @@
 									"const idMember = pm.collectionVariables.get(\"idNewMember\");\r",
 									"const memberFullName = pm.collectionVariables.get(\"memberName\");\r",
 									"\r",
-									"pm.test(\"Should verify response status\", () =>{\r",
+									"pm.test(\"Should verify response status is 200\", () =>{\r",
 									"    pm.response.to.have.status(200)\r",
 									"})\r",
 									"\r",
-									"pm.test(\"Should verify id new member\", () =>{\r",
-									"    pm.expect(respBody[1].id).to.eql(idMember)\r",
+									"pm.test(\"Should verify response is a array\", () =>{\r",
+									"    pm.expect(respBody).to.be.an(\"array\");\r",
 									"})\r",
 									"\r",
-									"pm.test(\"Should verify name new member\", () =>{\r",
+									"pm.test(\"Should verify response array isn't empty\", () =>{\r",
+									"    pm.expect(respBody).is.not.empty;\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify name member isn't new member full name\", () =>{\r",
 									"    pm.expect(respBody[0].fullName).to.eql(memberFullName)\r",
 									"})\r",
+									"\r",
+									"\r",
 									""
 								],
 								"type": "text/javascript"
@@ -356,6 +395,24 @@
 				},
 				{
 					"name": "Remove Member from Board",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const respBody = pm.response.json();\r",
+									"\r",
+									"\r",
+									"pm.test(\"Should verify response status is 200\", () =>{\r",
+									"    pm.expect(pm.response.code).to.eql(200)\r",
+									"})\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "DELETE",
 						"header": [],
@@ -382,33 +439,29 @@
 						}
 					},
 					"response": []
-				}
-			]
-		},
-		{
-			"name": "Create a new List",
-			"item": [
+				},
 				{
-					"name": "Get a List info",
+					"name": "Get the Members of a Board Copy",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
 									"const respBody = pm.response.json();\r",
+									"const idMember = pm.collectionVariables.get(\"idNewMember\");\r",
+									"const memberFullName = pm.collectionVariables.get(\"memberName\");\r",
 									"\r",
-									"pm.test(\"Should verify response status\", () =>{\r",
+									"pm.test(\"Should verify response status is 200\", () =>{\r",
 									"    pm.response.to.have.status(200)\r",
 									"})\r",
 									"\r",
-									"pm.test(\"Should verify idBoard in every list\", () =>{\r",
-									"        respBody.forEach(item=>{\r",
-									"        pm.expect(item.closed).to.eql(false);\r",
-									"      })\r",
+									"pm.test(\"Should verify id  member is not equal new member\", () =>{\r",
+									"    pm.expect(respBody[0].id).to.not.eql(idMember)\r",
 									"})\r",
 									"\r",
-									"    pm.variables.set(\"firstListId\", respBody[0].id);\r",
-									"\r",
+									"pm.test(\"Should verify name member isn't new member full name\", () =>{\r",
+									"    pm.expect(respBody[0].fullName).to. not.eql(memberFullName)\r",
+									"})\r",
 									""
 								],
 								"type": "text/javascript"
@@ -419,13 +472,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseURL}}boards/{{boardId}}/lists?token={{token}}&key={{key}}",
+							"raw": "{{baseURL}}boards/{{boardId}}/members?token={{token}}&key={{key}}",
 							"host": [
 								"{{baseURL}}boards"
 							],
 							"path": [
 								"{{boardId}}",
-								"lists"
+								"members"
 							],
 							"query": [
 								{
@@ -440,7 +493,12 @@
 						}
 					},
 					"response": []
-				},
+				}
+			]
+		},
+		{
+			"name": "Create a new List",
+			"item": [
 				{
 					"name": "Create a new List",
 					"event": [
@@ -462,10 +520,10 @@
 									"const respBody = pm.response.json();\r",
 									"const nameList = pm.variables.get(\"newListName\");\r",
 									"\r",
-									"pm.test(\"Should verify response status\", () =>{\r",
+									"pm.test(\"Should verify response status is 200\", () =>{\r",
 									"   pm.expect(pm.response.code).to.eql(200)\r",
 									"})\r",
-									"pm.test(\"Should verify list name \", () =>{\r",
+									"pm.test(\"Should verify list name is correct \", () =>{\r",
 									"        pm.expect(respBody.name).to.eql(nameList)\r",
 									"})\r",
 									"\r",
@@ -515,7 +573,7 @@
 					"response": []
 				},
 				{
-					"name": "Get a List info",
+					"name": "Get a List on Board",
 					"event": [
 						{
 							"listen": "test",
@@ -524,11 +582,11 @@
 									"const respBody = pm.response.json();\r",
 									"const nameList = pm.collectionVariables.get(\"newListName\");\r",
 									"\r",
-									"pm.test(\"Should verify name new list\", () =>{\r",
+									"pm.test(\"Should verify name new list is correct\", () =>{\r",
 									"    pm.expect(respBody[0].name).to.eql(nameList)\r",
 									"})\r",
 									"\r",
-									"pm.test(\"Should verify status for all list\", () =>{\r",
+									"pm.test(\"Should verify status for all list is correct\", () =>{\r",
 									" respBody.forEach(item=>{\r",
 									"        pm.expect(item.status).to.eql(null);\r",
 									"      })\r",
@@ -570,63 +628,6 @@
 			"name": "Create a new Card",
 			"item": [
 				{
-					"name": "Get a Card info",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const respBody = pm.response.json();\r",
-									"\r",
-									"pm.test(\"Should verify response status\", () =>{\r",
-									"    pm.response.to.have.status(200);\r",
-									"})\r",
-									"\r",
-									"pm.test(\"Should verify idList of card in a list\", () =>{\r",
-									"    const idList = pm.variables.get(\"firstListId\")\r",
-									"    respBody.map(item =>{\r",
-									"    pm.expect(item.idList).to.contain(idList)\r",
-									"    })   \r",
-									"})\r",
-									"\r",
-									"pm.test(\"Should verify card closed is false\", () =>{\r",
-									"    respBody.forEach(item =>{\r",
-									"    pm.expect(item.closed).to.eql(false)\r",
-									"    })\r",
-									"})\r",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseURL}}lists/{{newListId}}/cards?token={{token}}&key={{key}}",
-							"host": [
-								"{{baseURL}}lists"
-							],
-							"path": [
-								"{{newListId}}",
-								"cards"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{token}}"
-								},
-								{
-									"key": "key",
-									"value": "{{key}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Create a new Card",
 					"event": [
 						{
@@ -646,17 +647,13 @@
 								"exec": [
 									"const respBody = pm.response.json();\r",
 									"\r",
-									"pm.test(\"Should verify response status\", () =>{\r",
+									"pm.test(\"Should verify response status is 200\", () =>{\r",
 									"    pm.response.to.have.status(200)\r",
 									"})\r",
 									"\r",
-									"pm.test(\"Create variable -> card id\", () =>{\r",
-									"    pm.collectionVariables.set(\"CardId\", respBody.id )\r",
-									"})\r",
-									"\r",
-									"pm.test(\"Create variable -> card name\", () =>{\r",
-									"    pm.collectionVariables.set(\"newCardName\", respBody.name)\r",
-									"})"
+									"pm.collectionVariables.set(\"CardId\", respBody.id )\r",
+									"pm.collectionVariables.set(\"newCardName\", respBody.name)\r",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -707,7 +704,7 @@
 									"const respBody = pm.response.json();\r",
 									"const newCardName = pm.collectionVariables.get(\"newCardName\");\r",
 									"\r",
-									"pm.test(\"Should verify response status\", () =>{\r",
+									"pm.test(\"Should verify response status is 200\", () =>{\r",
 									"    pm.response.to.have.status(200);\r",
 									"})\r",
 									"\r",
@@ -755,461 +752,341 @@
 			"name": "Update a Card",
 			"item": [
 				{
-					"name": "Get a Card info",
-					"event": [
+					"name": "Add a Member to Card",
+					"item": [
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const respBody = pm.response.json();\r",
-									"const cardId = pm.collectionVariables.get(\"CardId\")\r",
-									"\r",
-									"pm.test(\"Should verify response status\", () =>{\r",
-									"    pm.response.to.have.status(200)\r",
-									"})\r",
-									"\r",
-									"pm.test(\"Should verify id card\", () =>{\r",
-									"    pm.expect(respBody[0].id).to.eql(cardId)\r",
-									"})\r",
-									"\r",
-									"pm.test(\"Should verify lists status\", () =>{\r",
-									"    respBody.forEach(item =>{\r",
-									"        pm.expect(item.closed).to.eql(false);\r",
-									"    })\r",
-									"})\r",
-									"\r",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseURL}}lists/{{newListId}}/cards?token={{token}}&key={{key}}",
-							"host": [
-								"{{baseURL}}lists"
-							],
-							"path": [
-								"{{newListId}}",
-								"cards"
-							],
-							"query": [
+							"name": "Add a Member to a Card",
+							"event": [
 								{
-									"key": "token",
-									"value": "{{token}}"
-								},
-								{
-									"key": "key",
-									"value": "{{key}}"
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const respBody = pm.response.json();\r",
+											"const idMember = pm.collectionVariables.get(\"idNewMember\")\r",
+											"\r",
+											"pm.test(\"Should verify response status is 200\", () =>{\r",
+											"    pm.response.to.have.status(200)\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Should verify id member is correct\", () =>{\r",
+											"    pm.expect(respBody[0].id).to.eql(idMember)\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Should verify response is array\", () =>{\r",
+											"    pm.expect(respBody).to.be.an(\"array\")\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Should verify response array isn't empty\", () =>{\r",
+											"    pm.expect(respBody).is.not.empty;\r",
+											"})\r",
+											""
+										],
+										"type": "text/javascript"
+									}
 								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Actions on a Card",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const respBody = pm.response.json();\r",
-									"const boardId = pm.collectionVariables.get(\"boardId\");\r",
-									"const listName = pm.collectionVariables.get(\"newListName\");\r",
-									"const cardId = pm.collectionVariables.get(\"CardId\");\r",
-									"const memberId = pm.collectionVariables.get(\"idNewMember\")\r",
-									"\r",
-									"pm.test(\"Should verify response status\", () =>{\r",
-									"    pm.response.to.have.status(200);\r",
-									"})\r",
-									"\r",
-									"pm.test(\"Should verify response board id\", () =>{\r",
-									"    pm.expect(respBody[0].board.id).to.eql(boardId)\r",
-									"})\r",
-									"\r",
-									"pm.test(\"Should verify respBody list name\", () =>{\r",
-									"    pm.expect(respBody[0].list.name).to.eql(listName)\r",
-									"})\r",
-									"\r",
-									"pm.test(\"Should verify respBody card id\", () =>{\r",
-									"    pm.expect(respBody[0].id).to.eql(cardId)\r",
-									"})\r",
-									"\r",
-									"pm.test(\"Should verify memberCreator id\", () =>{\r",
-									"    pm.expect(respBody[0].memberCreator.id).to.eql(idMember)\r",
-									"})"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseURL}}cards/{{CardId}}/actions?token={{token}}&key={{key}}",
-							"host": [
-								"{{baseURL}}cards"
 							],
-							"path": [
-								"{{CardId}}",
-								"actions"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{token}}"
-								},
-								{
-									"key": "key",
-									"value": "{{key}}"
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseURL}}cards/{{CardId}}/idMembers?token={{token}}&key={{key}}&value={{idNewMember}}",
+									"host": [
+										"{{baseURL}}cards"
+									],
+									"path": [
+										"{{CardId}}",
+										"idMembers"
+									],
+									"query": [
+										{
+											"key": "token",
+											"value": "{{token}}"
+										},
+										{
+											"key": "key",
+											"value": "{{key}}"
+										},
+										{
+											"key": "value",
+											"value": "{{idNewMember}}"
+										}
+									]
 								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Add a Member to a Card",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{baseURL}}cards/{{CardId}}/idMembers?token={{token}}&key={{key}}&value={{idNewMember}}",
-							"host": [
-								"{{baseURL}}cards"
-							],
-							"path": [
-								"{{CardId}}",
-								"idMembers"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{token}}"
-								},
-								{
-									"key": "key",
-									"value": "{{key}}"
-								},
-								{
-									"key": "value",
-									"value": "{{idNewMember}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Remove a Member from a Card",
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{baseURL}}cards/{{CardId}}/idMembers/{{idNewMember}}?token={{token}}&key={{key}}",
-							"host": [
-								"{{baseURL}}cards"
-							],
-							"path": [
-								"{{CardId}}",
-								"idMembers",
-								"{{idNewMember}}"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{token}}"
-								},
-								{
-									"key": "key",
-									"value": "{{key}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create Checklist on a Card",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const respBody = pm.response.json();\r",
-									"\r",
-									"pm.test(\"Should verify response status\", () =>{\r",
-									"    pm.response.to.have.status(200);\r",
-									"})\r",
-									"\r",
-									"pm.collectionVariables.set(\"checklistId\", respBody.id)"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{baseURL}}cards/{{CardId}}/checklists?token={{token}}&key={{key}}",
-							"host": [
-								"{{baseURL}}cards"
-							],
-							"path": [
-								"{{CardId}}",
-								"checklists"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{token}}"
-								},
-								{
-									"key": "key",
-									"value": "{{key}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete a Checklist on a Card",
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{baseURL}}cards/{{CardId}}/checklists/{{checklistId}}?token={{token}}&key={{key}}",
-							"host": [
-								"{{baseURL}}cards"
-							],
-							"path": [
-								"{{CardId}}",
-								"checklists",
-								"{{checklistId}}"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{token}}"
-								},
-								{
-									"key": "key",
-									"value": "{{key}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Add a new comment to a Card",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							},
+							"response": []
 						},
-						"url": {
-							"raw": "{{baseURL}}cards/{{CardId}}/actions/comments?token={{token}}&key={{key}}&text={{$randomCatchPhrase}}",
-							"host": [
-								"{{baseURL}}cards"
-							],
-							"path": [
-								"{{CardId}}",
-								"actions",
-								"comments"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{token}}"
-								},
-								{
-									"key": "key",
-									"value": "{{key}}"
-								},
-								{
-									"key": "text",
-									"value": "{{$randomCatchPhrase}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Remove Card to another list",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{baseURL}}lists/{{newListId}}/moveAllCards?token={{token}}&key={{key}}&idList=6446100ce3f5b4dff464106c&idBoard={{boardId}}",
-							"host": [
-								"{{baseURL}}lists"
-							],
-							"path": [
-								"{{newListId}}",
-								"moveAllCards"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{token}}"
-								},
-								{
-									"key": "key",
-									"value": "{{key}}"
-								},
-								{
-									"key": "idList",
-									"value": "6446100ce3f5b4dff464106c"
-								},
-								{
-									"key": "idBoard",
-									"value": "{{boardId}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get a Card",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseURL}}cards/{{CardId}}?token={{token}}&key={{key}}",
-							"host": [
-								"{{baseURL}}cards"
-							],
-							"path": [
-								"{{CardId}}"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{token}}"
-								},
-								{
-									"key": "key",
-									"value": "{{key}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create a new Label on a Card",
-					"event": [
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const respBody = pm.response.json();\r",
-									"\r",
-									"pm.test(\"Should verify response status\", () =>{\r",
-									"    pm.response.to.have.status(200)\r",
-									"})\r",
-									"\r",
-									"pm.collectionVariables.set(\"labelId\", respBody.id)\r",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{baseURL}}cards/{{CardId}}/labels?key={{key}}&token={{token}}&color=purple",
-							"host": [
-								"{{baseURL}}cards"
-							],
-							"path": [
-								"{{CardId}}",
-								"labels"
-							],
-							"query": [
+							"name": "Get Cards the Member is on",
+							"event": [
 								{
-									"key": "key",
-									"value": "{{key}}"
-								},
-								{
-									"key": "token",
-									"value": "{{token}}"
-								},
-								{
-									"key": "color",
-									"value": "purple"
-								},
-								{
-									"key": "",
-									"value": "",
-									"disabled": true
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const respBody = pm.response.json();\r",
+											"const cardId = pm.collectionVariables.get(\"CardId\");\r",
+											"const cardName = pm.collectionVariables.get(\"newCardName\")\r",
+											"\r",
+											"pm.test(\"Should verify response status is 200\", () =>{\r",
+											"    pm.response.to.have.status(200)\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Should verify id card\", () =>{\r",
+											"    pm.expect(respBody[0].id).to.eql(cardId)\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Should verify name of card\", () => {\r",
+											"    pm.expect(respBody[0].name).to.eql(cardName)\r",
+											"})\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
 								}
-							]
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseURL}}members/{{idNewMember}}/cards?token={{token}}&key={{key}}",
+									"host": [
+										"{{baseURL}}members"
+									],
+									"path": [
+										"{{idNewMember}}",
+										"cards"
+									],
+									"query": [
+										{
+											"key": "token",
+											"value": "{{token}}"
+										},
+										{
+											"key": "key",
+											"value": "{{key}}"
+										}
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				},
 				{
-					"name": "Add a Label to a Card",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{baseURL}}cards/{{CardId}}/idLabels?token={{token}}&key={{key}}&value={{labelId}}",
-							"host": [
-								"{{baseURL}}cards"
-							],
-							"path": [
-								"{{CardId}}",
-								"idLabels"
-							],
-							"query": [
+					"name": "Add a Checklist",
+					"item": [
+						{
+							"name": "Create Checklist on a Card",
+							"event": [
 								{
-									"key": "token",
-									"value": "{{token}}"
-								},
-								{
-									"key": "key",
-									"value": "{{key}}"
-								},
-								{
-									"key": "value",
-									"value": "{{labelId}}"
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const respBody = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Should verify response status is 200\", () =>{\r",
+											"    pm.response.to.have.status(200);\r",
+											"})\r",
+											"\r",
+											"pm.collectionVariables.set(\"checklistId\", respBody.id)"
+										],
+										"type": "text/javascript"
+									}
 								}
-							]
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseURL}}cards/{{CardId}}/checklists?token={{token}}&key={{key}}",
+									"host": [
+										"{{baseURL}}cards"
+									],
+									"path": [
+										"{{CardId}}",
+										"checklists"
+									],
+									"query": [
+										{
+											"key": "token",
+											"value": "{{token}}"
+										},
+										{
+											"key": "key",
+											"value": "{{key}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get a Card",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const respBody = pm.response.json();\r",
+											"const idChecklists = pm.collectionVariables.get(\"checklistId\")\r",
+											"\r",
+											"pm.test(\"Should verify response status\", () =>{\r",
+											"    pm.expect(pm.response.code).to.eql(200)\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Should verify idChecklists is correct\", () =>{\r",
+											"    pm.expect(respBody.idChecklists[0]).to.eql(idChecklists)\r",
+											"})\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseURL}}cards/{{CardId}}?token={{token}}&key={{key}}",
+									"host": [
+										"{{baseURL}}cards"
+									],
+									"path": [
+										"{{CardId}}"
+									],
+									"query": [
+										{
+											"key": "token",
+											"value": "{{token}}"
+										},
+										{
+											"key": "key",
+											"value": "{{key}}"
+										}
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
+				},
+				{
+					"name": "Add a new Label",
+					"item": [
+						{
+							"name": "Create a new Label on a Card",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const respBody = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Should verify response status is 200\", () =>{\r",
+											"    pm.response.to.have.status(200)\r",
+											"})\r",
+											"\r",
+											"pm.collectionVariables.set(\"newLabelId\", respBody.id)\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"color\" : \"{{$randomColor}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseURL}}cards/{{CardId}}/labels?key={{key}}&token={{token}}",
+									"host": [
+										"{{baseURL}}cards"
+									],
+									"path": [
+										"{{CardId}}",
+										"labels"
+									],
+									"query": [
+										{
+											"key": "key",
+											"value": "{{key}}"
+										},
+										{
+											"key": "token",
+											"value": "{{token}}"
+										},
+										{
+											"key": "",
+											"value": null,
+											"disabled": true
+										},
+										{
+											"key": "",
+											"value": "",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get a Card info",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const respBody = pm.response.json();\r",
+											"const newLabelId = pm.collectionVariables.get(\"newLabelId\")\r",
+											"\r",
+											"pm.test(\"Should verify response status is 200\", () =>{\r",
+											"    pm.response.to.have.status(200)\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Should verify id new label is correct\", () =>{\r",
+											"    pm.expect(respBody[0].labels[0].id).to.eql(newLabelId)\r",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseURL}}lists/{{newListId}}/cards?token={{token}}&key={{key}}",
+									"host": [
+										"{{baseURL}}lists"
+									],
+									"path": [
+										"{{newListId}}",
+										"cards"
+									],
+									"query": [
+										{
+											"key": "token",
+											"value": "{{token}}"
+										},
+										{
+											"key": "key",
+											"value": "{{key}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			]
 		},
@@ -1217,7 +1094,7 @@
 			"name": "Archive  Cards in List",
 			"item": [
 				{
-					"name": "Get a Card info",
+					"name": "Archive all Cards from List",
 					"event": [
 						{
 							"listen": "test",
@@ -1225,55 +1102,12 @@
 								"exec": [
 									"const respBody = pm.response.json();\r",
 									"\r",
-									"pm.test(\"Should verify response status\", () =>{\r",
-									"    pm.response.to.have.status(200)\r",
-									"})"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseURL}}lists/{{newListId}}/cards?token={{token}}&key={{key}}",
-							"host": [
-								"{{baseURL}}lists"
-							],
-							"path": [
-								"{{newListId}}",
-								"cards"
-							],
-							"query": [
-								{
-									"key": "token",
-									"value": "{{token}}"
-								},
-								{
-									"key": "key",
-									"value": "{{key}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Archive all Cards in List",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const respBody = pm.response.json();\r",
-									"\r",
-									"pm.test( \"Should verify response status\", () =>{\r",
+									"pm.test( \"Should verify response status is 200\", () =>{\r",
 									"    pm.response.to.have.status(200)\r",
 									"})\r",
 									"\r",
-									"pm.test(\"Should verify response body\", () =>{\r",
-									"    pm.expect(respBody).to.be.eql({})\r",
+									"pm.test(\"Should verify response body is empty\", () =>{\r",
+									"    pm.expect(respBody).to.include({})\r",
 									"})"
 								],
 								"type": "text/javascript"
@@ -1305,12 +1139,7 @@
 						}
 					},
 					"response": []
-				}
-			]
-		},
-		{
-			"name": "Archive a List",
-			"item": [
+				},
 				{
 					"name": "Get a List info",
 					"event": [
@@ -1320,7 +1149,7 @@
 								"exec": [
 									"const respBody = pm.response.json();\r",
 									"\r",
-									"pm.test(\"Should verify response status\", () =>{\r",
+									"pm.test(\"Should verify response status is 200\", () =>{\r",
 									"    pm.response.to.have.status(200)\r",
 									"})"
 								],
@@ -1353,7 +1182,12 @@
 						}
 					},
 					"response": []
-				},
+				}
+			]
+		},
+		{
+			"name": "Archive a List",
+			"item": [
 				{
 					"name": "Archive  a list",
 					"event": [
@@ -1363,7 +1197,7 @@
 								"exec": [
 									"const respBody = pm.response.json();\r",
 									"\r",
-									"pm.test(\"Should verify response status\", () =>{\r",
+									"pm.test(\"Should verify response status is 200\", () =>{\r",
 									"    pm.response.to.have.status(200)\r",
 									"})\r",
 									"\r",
@@ -1411,7 +1245,21 @@
 					"response": []
 				},
 				{
-					"name": "Get a List info Copy",
+					"name": "Get a List info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should verify response status is 404\", () =>{\r",
+									"    pm.response.to.have.status(404)\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -1444,7 +1292,7 @@
 			"name": "Delete a Board",
 			"item": [
 				{
-					"name": "Get Actions of a Board",
+					"name": "Delete a Board",
 					"event": [
 						{
 							"listen": "test",
@@ -1452,8 +1300,12 @@
 								"exec": [
 									"const respBody = pm.response.json();\r",
 									"\r",
-									"pm.test(\"Should verify response status\", () =>{\r",
+									"pm.test(\"Should verify response status is 200\", () =>{\r",
 									"    pm.response.to.have.status(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Should verify response info\", () =>{\r",
+									"    pm.expect(respBody._value).to.eql(null)\r",
 									"})"
 								],
 								"type": "text/javascript"
@@ -1461,16 +1313,15 @@
 						}
 					],
 					"request": {
-						"method": "GET",
+						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseURL}}boards/{{boardId}}/actions?token={{token}}&key={{key}}",
+							"raw": "{{baseURL}}boards/{{boardId}}?token={{token}}&key={{key}}",
 							"host": [
 								"{{baseURL}}boards"
 							],
 							"path": [
-								"{{boardId}}",
-								"actions"
+								"{{boardId}}"
 							],
 							"query": [
 								{
@@ -1487,30 +1338,22 @@
 					"response": []
 				},
 				{
-					"name": "Delete a Board",
+					"name": "Get a Board info",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"const respBody = pm.response.json();\r",
-									"\r",
-									"pm.test(\"Should verify response status\", () =>{\r",
-									"    pm.response.to.have.status(200)\r",
-									"})\r",
-									"\r",
-									"pm.test(\"Should verify response value\", () =>{\r",
-									"    pm.expect(respBody._value).to.eql(null)\r",
-									"})\r",
-									"\r",
-									""
+									"pm.test(\"Should verify status code is 404\", () =>{\r",
+									"    pm.expect(pm.response.code).to.eql(404)\r",
+									"})"
 								],
 								"type": "text/javascript"
 							}
 						}
 					],
 					"request": {
-						"method": "DELETE",
+						"method": "GET",
 						"header": [],
 						"url": {
 							"raw": "{{baseURL}}boards/{{boardId}}?token={{token}}&key={{key}}",
@@ -1575,23 +1418,11 @@
 			"value": ""
 		},
 		{
-			"key": "secoundCardId",
-			"value": ""
-		},
-		{
 			"key": "CardId",
 			"value": ""
 		},
 		{
 			"key": "checklistId",
-			"value": ""
-		},
-		{
-			"key": "idMembers",
-			"value": ""
-		},
-		{
-			"key": "labelId",
 			"value": ""
 		},
 		{
@@ -1604,6 +1435,10 @@
 		},
 		{
 			"key": "newCardName",
+			"value": ""
+		},
+		{
+			"key": "newLabelId",
 			"value": ""
 		}
 	]
